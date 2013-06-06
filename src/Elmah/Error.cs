@@ -44,7 +44,7 @@ namespace Elmah
     /// exception it may be representing).
     /// </summary>
 
-    [ Serializable ]
+    [Serializable]
     public sealed class Error : ICloneable
     {
         private readonly Exception _exception;
@@ -58,6 +58,7 @@ namespace Elmah
         private DateTime _time;
         private int _statusCode;
         private string _webHostHtmlMessage;
+        private NameValueCollection _additionalData;
         private NameValueCollection _serverVariables;
         private NameValueCollection _queryString;
         private NameValueCollection _form;
@@ -67,15 +68,15 @@ namespace Elmah
         /// Initializes a new instance of the <see cref="Error"/> class.
         /// </summary>
 
-        public Error() {}
+        public Error() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Error"/> class
         /// from a given <see cref="Exception"/> instance.
         /// </summary>
 
-        public Error(Exception e) : 
-            this(e, null) {}
+        public Error(Exception e) :
+            this(e, null) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Error"/> class
@@ -126,7 +127,7 @@ namespace Elmah
             if (context != null)
             {
                 IPrincipal webUser = context.User;
-                if (webUser != null 
+                if (webUser != null
                     && (webUser.Identity.Name ?? string.Empty).Length > 0)
                 {
                     _user = webUser.Identity.Name;
@@ -136,7 +137,7 @@ namespace Elmah
                 var qsfc = request.TryGetUnvalidatedCollections((form, qs, cookies) => new
                 {
                     QueryString = qs,
-                    Form = form, 
+                    Form = form,
                     Cookies = cookies,
                 });
 
@@ -163,7 +164,7 @@ namespace Elmah
             {
                 return e.GetHtmlErrorMessage();
             }
-            catch (SecurityException se) 
+            catch (SecurityException se)
             {
                 // In partial trust environments, HttpException.GetHtmlErrorMessage() 
                 // has been known to throw:
@@ -172,7 +173,7 @@ namespace Elmah
                 // 
                 // See issue #179 for more background:
                 // http://code.google.com/p/elmah/issues/detail?id=179
-                
+
                 Trace.WriteLine(se);
                 return null;
             }
@@ -198,7 +199,7 @@ namespace Elmah
         /// </summary>
 
         public string ApplicationName
-        { 
+        {
             get { return _applicationName ?? string.Empty; }
             set { _applicationName = value; }
         }
@@ -206,9 +207,9 @@ namespace Elmah
         /// <summary>
         /// Gets or sets name of host machine where this error occurred.
         /// </summary>
-        
+
         public string HostName
-        { 
+        {
             get { return _hostName ?? string.Empty; }
             set { _hostName = value; }
         }
@@ -216,9 +217,9 @@ namespace Elmah
         /// <summary>
         /// Gets or sets the type, class or category of the error.
         /// </summary>
-        
+
         public string Type
-        { 
+        {
             get { return _typeName ?? string.Empty; }
             set { _typeName = value; }
         }
@@ -226,9 +227,9 @@ namespace Elmah
         /// <summary>
         /// Gets or sets the source that is the cause of the error.
         /// </summary>
-        
+
         public string Source
-        { 
+        {
             get { return _source ?? string.Empty; }
             set { _source = value; }
         }
@@ -236,9 +237,9 @@ namespace Elmah
         /// <summary>
         /// Gets or sets a brief text describing the error.
         /// </summary>
-        
-        public string Message 
-        { 
+
+        public string Message
+        {
             get { return _message ?? string.Empty; }
             set { _message = value; }
         }
@@ -249,7 +250,7 @@ namespace Elmah
         /// </summary>
 
         public string Detail
-        { 
+        {
             get { return _detail ?? string.Empty; }
             set { _detail = value; }
         }
@@ -258,9 +259,9 @@ namespace Elmah
         /// Gets or sets the user logged into the application at the time 
         /// of the error.
         /// </summary>
-        
-        public string User 
-        { 
+
+        public string User
+        {
             get { return _user ?? string.Empty; }
             set { _user = value; }
         }
@@ -269,9 +270,9 @@ namespace Elmah
         /// Gets or sets the date and time (in local time) at which the 
         /// error occurred.
         /// </summary>
-        
-        public DateTime Time 
-        { 
+
+        public DateTime Time
+        {
             get { return _time; }
             set { _time = value; }
         }
@@ -284,9 +285,9 @@ namespace Elmah
         /// For cases where this value cannot always be reliably determined, 
         /// the value may be reported as zero.
         /// </remarks>
-        
-        public int StatusCode 
-        { 
+
+        public int StatusCode
+        {
             get { return _statusCode; }
             set { _statusCode = value; }
         }
@@ -295,7 +296,7 @@ namespace Elmah
         /// Gets or sets the HTML message generated by the web host (ASP.NET) 
         /// for the given error.
         /// </summary>
-        
+
         public string WebHostHtmlMessage
         {
             get { return _webHostHtmlMessage ?? string.Empty; }
@@ -306,29 +307,29 @@ namespace Elmah
         /// Gets a collection representing the Web server variables
         /// captured as part of diagnostic data for the error.
         /// </summary>
-        
-        public NameValueCollection ServerVariables 
-        { 
-            get { return FaultIn(ref _serverVariables);  }
+
+        public NameValueCollection ServerVariables
+        {
+            get { return FaultIn(ref _serverVariables); }
         }
 
         /// <summary>
         /// Gets a collection representing the Web query string variables
         /// captured as part of diagnostic data for the error.
         /// </summary>
-        
-        public NameValueCollection QueryString 
-        { 
-            get { return FaultIn(ref _queryString); } 
+
+        public NameValueCollection QueryString
+        {
+            get { return FaultIn(ref _queryString); }
         }
 
         /// <summary>
         /// Gets a collection representing the form variables captured as 
         /// part of diagnostic data for the error.
         /// </summary>
-        
-        public NameValueCollection Form 
-        { 
+
+        public NameValueCollection Form
+        {
             get { return FaultIn(ref _form); }
         }
 
@@ -337,9 +338,17 @@ namespace Elmah
         /// captured as part of diagnostic data for the error.
         /// </summary>
 
-        public NameValueCollection Cookies 
+        public NameValueCollection Cookies
         {
             get { return FaultIn(ref _cookies); }
+        }
+
+        /// <summary>
+        /// Gets a collection representing custom storage
+        /// </summary>
+        public NameValueCollection AdditionalData
+        {
+            get { return FaultIn(ref _additionalData); }
         }
 
         /// <summary>
@@ -361,7 +370,7 @@ namespace Elmah
             // Make a base shallow copy of all the members.
             //
 
-            Error copy = (Error) MemberwiseClone();
+            Error copy = (Error)MemberwiseClone();
 
             //
             // Now make a deep copy of items that are mutable.
@@ -371,6 +380,7 @@ namespace Elmah
             copy._queryString = CopyCollection(_queryString);
             copy._form = CopyCollection(_form);
             copy._cookies = CopyCollection(_cookies);
+            copy._additionalData = CopyCollection(_additionalData);
 
             return copy;
         }

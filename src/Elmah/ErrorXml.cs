@@ -150,6 +150,7 @@ namespace Elmah
                     case "queryString"     : collection = error.QueryString; break;
                     case "form"            : collection = error.Form; break;
                     case "cookies"         : collection = error.Cookies; break;
+                    case "additionalData"  : collection = error.AdditionalData; break;
                     default                : reader.Skip(); continue;
                 }
 
@@ -240,6 +241,7 @@ namespace Elmah
             WriteCollection(writer, "queryString", error.QueryString);
             WriteCollection(writer, "form", error.Form);
             WriteCollection(writer, "cookies", error.Cookies);
+            WriteCollection(writer, "additionalData", error.AdditionalData);
         }
 
         private static void WriteCollection(XmlWriter writer, string name, NameValueCollection collection)

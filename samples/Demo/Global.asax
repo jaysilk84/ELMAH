@@ -11,6 +11,11 @@
             e.Dismiss();
     }
     
+    void ErrorLog_Logging(object sender, Elmah.ErrorLoggingEventArgs e)
+    {
+        e.Error.AdditionalData.Add("json", "{\"dog\":\"revis\"}");
+    }
+    
     // ReSharper restore InconsistentNaming
        
 </script>

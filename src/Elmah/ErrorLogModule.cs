@@ -43,6 +43,7 @@ namespace Elmah
     {
         public event ExceptionFilterEventHandler Filtering;
         public event ErrorLoggedEventHandler Logged;
+        public event ErrorLoggingEventHandler Logging;
 
         /// <summary>
         /// Initializes the module and prepares it to handle requests.
@@ -119,6 +120,9 @@ namespace Elmah
                 Error error = new Error(e, context);
                 ErrorLog log = GetErrorLog(context);
                 error.ApplicationName = log.ApplicationName;
+
+                OnLogging(new ErrorLoggingEventArgs(error));
+
                 string id = log.Log(error);
                 entry = new ErrorLogEntry(log, id, error);
             }
@@ -152,6 +156,15 @@ namespace Elmah
                 handler(this, args);
         }
 
+        protected virtual void OnLogging(ErrorLoggingEventArgs args)
+        {
+            var handler = Logging;
+
+            if (handler != null)
+                handler(this, args);
+
+        }
+
         /// <summary>
         /// Raises the <see cref="Filtering"/> event.
         /// </summary>
@@ -177,6 +190,8 @@ namespace Elmah
 
     public delegate void ErrorLoggedEventHandler(object sender, ErrorLoggedEventArgs args);
 
+    public delegate void ErrorLoggingEventHandler(object sender, ErrorLoggingEventArgs args);
+
     [ Serializable ]
     public sealed class ErrorLoggedEventArgs : EventArgs
     {
@@ -193,6 +208,25 @@ namespace Elmah
         public ErrorLogEntry Entry
         {
             get { return _entry; }
+        }
+    }
+
+    [Serializable]
+    public sealed class ErrorLoggingEventArgs : EventArgs
+    {
+        private readonly Error _error;
+
+        public ErrorLoggingEventArgs(Error error)
+        {
+            if (error == null)
+                throw new ArgumentNullException("error");
+
+            _error = error;
+        }
+
+        public Error Error
+        {
+            get { return _error; }
         }
     }
 }
